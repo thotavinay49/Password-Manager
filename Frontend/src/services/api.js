@@ -2,7 +2,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8080",
+  baseURL: import.meta.env.VITE_BACKEND_URL ?? "",
   withCredentials: true,
 });
 
@@ -26,11 +26,17 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const isAuthenticationRequest = [
+      "/api/user/login",
+      "/api/user/register",
+      "/api/user/refresh",
+    ].some((path) => originalRequest?.url?.includes(path));
 
     if (
       error.response?.status === 401 &&
+      originalRequest &&
       !originalRequest._retry &&
-      !originalRequest.url.includes("/refresh")
+      !isAuthenticationRequest
     ) {
       originalRequest._retry = true;
 

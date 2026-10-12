@@ -2,33 +2,40 @@ version: '3.8'
 
 services:
   backend:
-    image: registry.gitlab.com/jhenkarp/password-manager/backend:latest
+    build: ./Backend
     container_name: backend
     restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      DB_URL: jdbc:postgresql://db:5432/passwordmanagerdb
-      DB_USERNAME: admin
-      DB_PASSWORD: admin123
+      DB_URL: jdbc:mysql://db:3306/passwordmanagerdb?serverTimezone=UTC
+      DB_USERNAME: ${DB_USERNAME:-passwordmanager}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in the root .env file}
+      CREDENTIAL_ENCRYPTION_KEY: ${CREDENTIAL_ENCRYPTION_KEY:?Set CREDENTIAL_ENCRYPTION_KEY in the root .env file}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - app-network
 
   db:
-    image: postgres:15
+    image: mysql:8.4
     container_name: db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: passwordmanagerdb
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin123
+      MYSQL_DATABASE: passwordmanagerdb
+      MYSQL_USER: ${DB_USERNAME:-passwordmanager}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in the root .env file}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD in the root .env file}
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
     networks:
       - app-network
 

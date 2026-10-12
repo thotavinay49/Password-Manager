@@ -5,6 +5,7 @@ import com.PasswordManager.Backend.repository.UserRepository;
 import com.PasswordManager.Backend.service.UserService;
 import com.PasswordManager.Backend.util.JwtUtil;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -34,16 +36,19 @@ public class SecurityConfig {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final UserService userService;
+    private final String allowedOrigins;
 
     public SecurityConfig(
             MyUserDetailsService userDetailsService,
             UserRepository userRepository,
             JwtUtil jwtUtil,
-            @Lazy UserService userService) {
+            @Lazy UserService userService,
+            @Value("${app.allowed-origins:http://localhost:5173,http://127.0.0.1:5173}") String allowedOrigins) {
         this.userDetailsService = userDetailsService;
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.userService = userService;
+        this.allowedOrigins = allowedOrigins;
     }
 
     @Bean
@@ -92,7 +97,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        config.setAllowedOrigins(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-CSRF-Token"));
         config.setExposedHeaders(List.of("Authorization"));
@@ -113,7 +119,6 @@ public class SecurityConfig {
                 admin.setPassword(bCryptPasswordEncoder().encode("admin123"));
                 admin.setRole("ROLE_ADMIN");
                 userRepository.save(admin);
-                System.out.println("Admin user created: username='admin', password='admin123'");
             }
         };
     }

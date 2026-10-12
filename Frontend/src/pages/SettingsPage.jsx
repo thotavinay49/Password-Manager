@@ -243,7 +243,7 @@ export default function SettingsPage() {
       <Modal isOpen={aboutOpen} onClose={() => setAboutOpen(false)} panelClass={choose("bg-white","bg-gray-800")}>
         <h2 className={`text-2xl font-bold mb-4 ${choose("text-gray-800","text-gray-100")}`}>SecureVault</h2>
         <p className={choose("text-gray-700","text-gray-300")}>SecureVault is an open‑source password manager built with Spring Boot, React and Tailwind CSS.</p>
-        <p className={choose("text-gray-700","text-gray-300")}>Your credentials are encrypted client‑side, and strong‑password guidance is provided in real time.</p>
+        <p className={choose("text-gray-700","text-gray-300")}>Your saved credentials are encrypted in the backend before being stored, and strong-password guidance is provided in real time.</p>
         <p className={choose("text-gray-700","text-gray-300")}>Version 1.0.0 • © 2025 SecureVault Team</p>
         <Button onClick={() => setAboutOpen(false)} className={`${baseBtnCls} bg-indigo-600 hover:bg-indigo-700 text-white mt-4`}>Close</Button>
       </Modal>

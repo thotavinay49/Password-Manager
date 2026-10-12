@@ -2,6 +2,7 @@ package com.PasswordManager.Backend.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.PasswordManager.Backend.model.User;
 
@@ -10,12 +11,17 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private static final String SECRET_KEY = "super-secret-key-which-is-long-enough-to-be-secure";
     private static final long EXPIRATION_TIME = 1000 * 60 * 15; // 15 minutes
     private static final long TOKEN_ISSUED_AT_GRACE_WINDOW_MS = 2000; // 2 seconds
 
+    private final String secretKey;
+
+    public JwtUtil(@Value("${app.jwt-secret:super-secret-key-which-is-long-enough-to-be-secure-default}") String secretKey) {
+        this.secretKey = secretKey;
+    }
+
     private Key getSigningKey() {
-        byte[] keyBytes = SECRET_KEY.getBytes();
+        byte[] keyBytes = secretKey.getBytes();
         return Keys.hmacShaKeyFor(keyBytes);
     }
 

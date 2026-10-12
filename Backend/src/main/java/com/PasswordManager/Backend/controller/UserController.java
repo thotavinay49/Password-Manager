@@ -13,8 +13,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.authentication.*;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -33,6 +35,9 @@ public class UserController {
     private JwtUtil jwtUtil;
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+
+    @Value("${app.cookie-secure:false}")
+    private boolean cookieSecure;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User loginUser, HttpServletResponse response) {
@@ -56,22 +61,14 @@ public class UserController {
 
             Cookie refresh = new Cookie("refreshToken", refreshToken);
             refresh.setHttpOnly(true);
-            refresh.setSecure(false);
+            refresh.setSecure(cookieSecure);
             refresh.setPath("/api");
             refresh.setMaxAge(7 * 24 * 60 * 60);
             response.addCookie(refresh);
 
-            System.out.println("====== LOGIN DEBUG ======");
-            System.out.println("Generated AccessToken: " + token);
-            System.out.println("Generated RefreshToken (HttpOnly Cookie): " + refreshToken);
-            System.out.println("==========================");
-
             return ResponseEntity.ok(new JwtResponse(token, "Bearer", 15));
-        } catch (BadCredentialsException ex) {
+        } catch (AuthenticationException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An unexpected error occurred during login");
         }
     }
 
@@ -105,8 +102,6 @@ public class UserController {
         userService.save(user);
 
         String newAccessToken = jwtUtil.generateToken(extractedUsername, user.getRole(), now);
-        System.out.println("✅ New AccessToken Issued: " + newAccessToken);
-
         return ResponseEntity.ok(new JwtResponse(newAccessToken, "Bearer", 15));
     }
 
@@ -122,7 +117,7 @@ public class UserController {
 
         Cookie refresh = new Cookie("refreshToken", null);
         refresh.setHttpOnly(true);
-        refresh.setSecure(false);
+        refresh.setSecure(cookieSecure);
         refresh.setPath("/api");
         refresh.setMaxAge(0);
         response.addCookie(refresh);
@@ -131,7 +126,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user) {
+    public ResponseEntity<String> register(@RequestBody @Valid User user) {
         if (userService.findByUsername(user.getUsername()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already taken");
         }

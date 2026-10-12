@@ -11,6 +11,7 @@ export default function InputField({
   placeholder = "",
   type = "text",
   autoComplete = "",
+  className = "",
 }) {
   const { choose } = useTheme();
   const Icon = icon;
@@ -49,7 +50,7 @@ export default function InputField({
           } pr-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 ${choose(
             "border border-gray-300",
             "bg-gray-700 text-gray-100 border border-gray-600"
-          )}`}
+          )} ${className}`}
         />
       </div>
     </div>

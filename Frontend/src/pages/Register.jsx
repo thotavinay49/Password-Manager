@@ -13,7 +13,7 @@ import Button from "../components/ui/Button";
 
 export default function Register() {
   const { register } = useAuth();
-  const { theme, choose } = useTheme();       // ← choose from context
+  const { choose } = useTheme();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ username: "", password: "" });
@@ -39,15 +39,15 @@ export default function Register() {
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-6 ${choose(
-        "bg-gray-50",
-        "bg-gray-900"
+      className={`min-h-screen flex items-center justify-center p-6 bg-gradient-to-br ${choose(
+        "from-indigo-600 via-violet-600 to-fuchsia-500",
+        "from-gray-950 via-indigo-950 to-purple-950"
       )}`}
     >
       <div
-        className={`w-full max-w-md p-8 rounded-xl shadow ${choose(
-          "bg-white",
-          "bg-gray-800"
+        className={`w-full max-w-md p-8 rounded-2xl shadow-2xl ${choose(
+          "bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 border border-white/40",
+          "bg-gradient-to-br from-gray-800 via-indigo-950 to-purple-950 border border-indigo-800"
         )}`}
       >
         <div className="text-center mb-8">
@@ -68,6 +68,10 @@ export default function Register() {
             onChange={(v) => handleChange("username", v)}
             placeholder="Choose a username"
             autoComplete="username"
+            className={choose(
+              "bg-indigo-50 text-gray-900 border-indigo-200 placeholder:text-gray-500",
+              "border-indigo-700 placeholder:text-gray-400"
+            )}
           />
 
           <PasswordField
@@ -76,6 +80,10 @@ export default function Register() {
             onChange={(v) => handleChange("password", v)}
             placeholder="Create a strong password"
             autoComplete="new-password"
+            className={choose(
+              "bg-indigo-50 text-gray-900 border-indigo-200 placeholder:text-gray-500",
+              "border-indigo-700 placeholder:text-gray-400"
+            )}
           />
 
           <Button type="submit" loading={stat.loading} className={btnCls}>

@@ -12,7 +12,7 @@ import Button from "../components/ui/Button";
 
 export default function Login() {
   const { login } = useAuth();
-  const { theme, choose } = useTheme();
+  const { choose } = useTheme();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ username: "", password: "" });
@@ -36,15 +36,15 @@ export default function Login() {
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-6 ${choose(
-        "bg-gray-50",
-        "bg-gray-900"
+      className={`min-h-screen flex items-center justify-center p-6 bg-gradient-to-br ${choose(
+        "from-indigo-600 via-violet-600 to-fuchsia-500",
+        "from-gray-950 via-indigo-950 to-purple-950"
       )}`}
     >
       <div
-        className={`w-full max-w-md p-8 rounded-xl shadow ${choose(
-          "bg-white",
-          "bg-gray-800"
+        className={`w-full max-w-md p-8 rounded-2xl shadow-2xl ${choose(
+          "bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 border border-white/40",
+          "bg-gradient-to-br from-gray-800 via-indigo-950 to-purple-950 border border-indigo-800"
         )}`}
       >
         <div className="text-center mb-8">
@@ -68,12 +68,20 @@ export default function Login() {
             onChange={(v) => setForm({ ...form, username: v })}
             placeholder="Enter username"
             autoComplete="username"
+            className={choose(
+              "bg-indigo-50 text-gray-900 border-indigo-200 placeholder:text-gray-500",
+              "border-indigo-700 placeholder:text-gray-400"
+            )}
           />
 
           <PasswordField
             id="password"
             value={form.password}
             onChange={(v) => setForm({ ...form, password: v })}
+            className={choose(
+              "bg-indigo-50 text-gray-900 border-indigo-200 placeholder:text-gray-500",
+              "border-indigo-700 placeholder:text-gray-400"
+            )}
           />
 
           <Button type="submit" loading={stat.loading} className={btnCls}>

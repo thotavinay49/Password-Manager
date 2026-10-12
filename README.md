@@ -76,10 +76,30 @@ cd Password-Manager/App
 ### 2️⃣ Backend Setup
 ```bash
 cd Backend
-mvn clean install
-mvn spring-boot:run
+mvnw.cmd clean install
 ```
-The backend will start at **`http://localhost:8080`**.
+
+In MySQL Workbench, connect to your local MySQL server and run this once. Replace the example password with a new password of your choice:
+```sql
+CREATE DATABASE IF NOT EXISTS passwordmanagerdb;
+CREATE USER IF NOT EXISTS 'VINAY_SECURED'@'localhost'
+  IDENTIFIED BY 'replace-with-a-new-strong-password';
+ALTER USER 'VINAY_SECURED'@'localhost'
+  IDENTIFIED BY 'replace-with-a-new-strong-password';
+GRANT ALL PRIVILEGES ON passwordmanagerdb.* TO 'VINAY_SECURED'@'localhost';
+```
+
+Set the same credentials for Spring Boot in PowerShell, then start the backend. `DB_USERNAME` and `DB_PASSWORD` are required; the backend does not fall back to the MySQL `root` account:
+```powershell
+$env:DB_USERNAME = "VINAY_SECURED"
+$env:DB_PASSWORD = "<the new MySQL password>"
+$bytes = New-Object byte[] 32
+[Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+$env:CREDENTIAL_ENCRYPTION_KEY = [Convert]::ToBase64String($bytes)
+.\mvnw.cmd spring-boot:run
+```
+
+Generate `CREDENTIAL_ENCRYPTION_KEY` once and keep it private and backed up. Reuse that exact key on every backend restart; changing or losing it makes saved credential passwords unreadable. Saved vault passwords are encrypted by the backend using AES-GCM before being stored in MySQL. Existing plaintext vault passwords are encrypted the first time that user's vault is fetched. The backend connects to MySQL at **`localhost:3306`**. User accounts and application data are stored in `passwordmanagerdb`. The backend starts at **`http://localhost:8080`**.
 
 ### 3️⃣ Frontend Setup
 ```bash
@@ -93,17 +113,19 @@ The frontend will start at **`http://localhost:5173`** (Vite default).
 
 ## 🔑 Environment Variables
 
-**Backend (`application.properties`)**
+**Backend environment variables** (set these before starting Spring Boot)
 ```properties
-spring.datasource.url=jdbc:h2:file:./data/passwordmanagerdb
-spring.datasource.username=sa
-spring.datasource.password=
+DB_URL=jdbc:mysql://localhost:3306/passwordmanagerdb?createDatabaseIfNotExist=true&serverTimezone=UTC
+DB_USERNAME=VINAY_SECURED
+DB_PASSWORD=your_mysql_password
+CREDENTIAL_ENCRYPTION_KEY=base64_encoded_32_byte_key
 jwt.secret=your_jwt_secret
 ```
 
 **Frontend (`.env`)**
 ```env
-VITE_API_BASE_URL=http://localhost:8080
+# Optional: omit to use the Vite /api proxy to localhost:8080
+VITE_BACKEND_URL=http://localhost:8080
 ```
 
 ---
@@ -114,7 +136,7 @@ VITE_API_BASE_URL=http://localhost:8080
 ---
 
 ## 🛡 Security Notes
-- Passwords are encrypted before storage.
+- Vault passwords are encrypted in the backend before database storage. Protect and back up `CREDENTIAL_ENCRYPTION_KEY`; do not commit or rotate it without migrating existing data.
 - JWT tokens are used for authentication.
 - Implement HTTPS in production.
 

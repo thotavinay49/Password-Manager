@@ -35,13 +35,9 @@ export function AuthProvider({ children }) {
     (async () => {
       try {
         const res = await api.post("/api/user/refresh");
-        const { token, refreshToken } = res.data;
+        const { token } = res.data;
 
         setAuth(token);
-        console.log("🔁 Refreshed AccessToken:", token);
-        if (refreshToken) {
-          console.log("📦 Existing RefreshToken:", refreshToken);
-        }
 
         const role = await fetchRole();
         setUser({ username, role, isAdmin: role === "ROLE_ADMIN" });
@@ -50,7 +46,7 @@ export function AuthProvider({ children }) {
         if (location.pathname === "/login" || location.pathname === "/") {
           navigate(lastPath || "/dashboard", { replace: true });
         }
-      } catch (err) {
+      } catch {
         clearAuth();
         setUser(null);
       } finally {
@@ -63,13 +59,8 @@ export function AuthProvider({ children }) {
     try {
       const res = await loginRequest(username, password);
       const token = res.token;
-      const refreshToken = res.refreshToken;
 
       setAuth(token);
-      console.log("🔐 AccessToken after login:", token);
-      if (refreshToken) {
-        console.log("📦 Login RefreshToken:", refreshToken);
-      }
 
       localStorage.setItem("loggedInUser", "true");
       localStorage.setItem("username", username);
@@ -94,7 +85,12 @@ export function AuthProvider({ children }) {
     } catch (err) {
       return {
         success: false,
-        message: err.response?.data || "Registration failed",
+        message:
+          !err.response || err.response.status === 503
+            ? "Backend unavailable. Start Spring Boot and check its terminal for MySQL connection errors."
+            : err.response.data?.message ||
+              err.response.data ||
+              "Registration failed. Please check your details and try again.",
       };
     }
   };
@@ -102,7 +98,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       await logoutRequest();
-    } catch (e) {
+    } catch {
       console.warn("⚠️ Backend logout failed or already logged out");
     }
 

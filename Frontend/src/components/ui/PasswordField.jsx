@@ -10,6 +10,7 @@ export default function PasswordField({
   onChange,
   autoComplete = "current-password",
   placeholder = "Enter password",
+  className = "",
 }) {
   const [show, setShow] = useState(false);
   const { choose } = useTheme();
@@ -44,7 +45,7 @@ export default function PasswordField({
           className={`w-full pl-10 pr-12 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 ${choose(
             "border border-gray-300",
             "bg-gray-700 text-gray-100 border border-gray-600"
-          )}`}
+          )} ${className}`}
         />
 
         <button

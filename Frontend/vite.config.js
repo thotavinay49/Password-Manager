@@ -22,7 +22,15 @@ export default defineConfig(({ mode }) => {
         "/api": {
           target: env.VITE_BACKEND_URL || "http://localhost:8080",
           changeOrigin: true,
-          secure: false
+          secure: false,
+          configure: (proxy) => {
+            proxy.on("error", (_error, _request, response) => {
+              if ("writeHead" in response) {
+                response.writeHead(503, { "Content-Type": "application/json" });
+                response.end(JSON.stringify({ message: "Backend unavailable" }));
+              }
+            });
+          }
         }
       }
     },
