@@ -37,7 +37,12 @@ export default function PasswordGenerator() {
 
   const copy = async () => {
     if (!pwd) return;
-    try { await navigator.clipboard.writeText(pwd); flash("copied"); } catch {}
+    try {
+      await navigator.clipboard.writeText(pwd);
+      flash("copied");
+    } catch {
+      // clipboard fallback
+    }
   };
 
   const toggle = (k) => setOpts({ ...opts, [k]: !opts[k] });
@@ -61,7 +66,7 @@ export default function PasswordGenerator() {
             ${choose("bg-white text-gray-900", "bg-gray-800 text-gray-100")}
           `}
         >
-          <h3 className="text-2xl font-semibold mb-6 text-center">Password Generator</h3>
+          <h3 className="text-2xl font-semibold mb-6 text-center">Password Generator</h3>
 
           {/* password field + copy */}
           <div className="flex items-center space-x-3">

@@ -4,7 +4,7 @@ import Sidebar           from "../components/layout/Sidebar";
 import { useTheme }      from "../context/ThemeContext";
 
 export default function PasswordGeneratorPage() {
-  const { theme, choose } = useTheme();   // choose helper comes from ThemeContext
+  const { choose } = useTheme();   // choose helper comes from ThemeContext
 
   return (
     <div className={`min-h-screen ${choose("bg-gray-50", "bg-gray-900")}`}>

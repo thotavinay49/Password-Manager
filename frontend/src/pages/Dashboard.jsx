@@ -15,7 +15,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -31,7 +30,6 @@ import { getBaseURL } from "../services/api";
 export default function Dashboard() {
   const { choose } = useTheme();
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   const [credentials, setCredentials] = useState([]);
   const [loading, setLoading] = useState(true);

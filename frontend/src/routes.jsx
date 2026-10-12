@@ -56,7 +56,7 @@ function RouteWithToast({ element: Element, pageName, ...rest }) {
     }
 
     show(`Welcome to ${pageName} page, ${user?.username ?? "Guest"}`);
-  }, [location.pathname, user?.username, user?.role, show, pageName]);
+  }, [location.pathname, user, show, pageName]);
 
   return <Element {...rest} />;
 }

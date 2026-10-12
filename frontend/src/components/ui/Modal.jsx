@@ -1,6 +1,4 @@
 // ./src/components/ui/Modal.jsx
-import { useState } from "react";
-
 export default function Modal({
   isOpen,
   onClose,
@@ -10,7 +8,6 @@ export default function Modal({
   animated = true,
   outsideClosable = true,
 }) {
-  const [show] = useState(isOpen);
   if (!isOpen) return null;
 
   const panelBase = `
