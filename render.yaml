@@ -10,8 +10,12 @@ services:
     envVars:
       - key: PORT
         value: 8080
-      - key: SPRING_PROFILES_ACTIVE
-        value: local
+      - key: DB_URL
+        value: "jdbc:mysql://passwordmanager-db-anurag-2ed0.g.aivencloud.com:26360/defaultdb?sslMode=REQUIRED&serverTimezone=UTC"
+      - key: DB_USERNAME
+        value: "avnadmin"
+      - key: DB_PASSWORD
+        sync: false
       - key: COOKIE_SECURE
         value: "true"
       - key: ALLOWED_ORIGINS
@@ -19,7 +23,7 @@ services:
       - key: CREDENTIAL_ENCRYPTION_KEY
         value: "YsAdQ2c3DSj062W4GXRbSZZrFZ4NSQw5r9Oj53IW7WQ="
       - key: JWT_SECRET
-        generateValue: true
+        value: "super-secret-key-which-is-long-enough-to-be-secure-default-dev"
 
   # React / Vite Frontend Static Site
   - type: web
