@@ -70,7 +70,7 @@ api.interceptors.response.use(
     ].some((path) => originalRequest?.url?.includes(path));
 
     if (
-      error.response?.status === 401 &&
+      (error.response?.status === 401 || error.response?.status === 403) &&
       originalRequest &&
       !originalRequest._retry &&
       !isAuthenticationRequest
@@ -105,6 +105,9 @@ api.interceptors.response.use(
         console.warn("🔁 Refresh token failed:", err?.response?.status);
         processQueue(err, null);
         clearAuth();
+        if (typeof window !== "undefined" && !window.location.pathname.includes("/login") && !window.location.pathname.includes("/register")) {
+          window.location.href = "/login";
+        }
         return Promise.reject(err);
       } finally {
         isRefreshing = false;
