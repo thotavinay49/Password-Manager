@@ -25,7 +25,7 @@ export default function Sidebar({ active, onSelect }) {
     ["credentials", "My Passwords", Key],
     ["generator",   "Generator",    RefreshCw],
     ["settings",    "Settings",     Settings],
-    ...(user.isAdmin ? [["admin", "Admin", ShieldAlert]] : []),
+    ...(user?.isAdmin ? [["admin", "Admin", ShieldAlert]] : []),
   ];
 
   return (

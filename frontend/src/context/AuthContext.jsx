@@ -26,54 +26,88 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const loggedInUser = localStorage.getItem("loggedInUser");
     const username = localStorage.getItem("username");
+    const token = localStorage.getItem("token");
 
     if (loggedInUser !== "true" || !username) {
       setLoading(false);
       return;
     }
 
-    (async () => {
-      try {
-        const res = await api.post("/api/user/refresh");
-        const { token } = res.data;
-
-        setAuth(token);
-
-        const role = await fetchRole();
-        setUser({ username, role, isAdmin: role === "ROLE_ADMIN" });
-
-        const lastPath = localStorage.getItem("lastPath");
-        if (location.pathname === "/login" || location.pathname === "/") {
-          navigate(lastPath || "/dashboard", { replace: true });
+    if (token) {
+      setAuth(token);
+      setUser({ username, role: "ROLE_USER", isAdmin: false });
+      fetchRole()
+        .then((role) => {
+          setUser({ username, role, isAdmin: role === "ROLE_ADMIN" });
+        })
+        .catch(() => {
+          // Token might still be valid or fallback to user role
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      (async () => {
+        try {
+          const res = await api.post("/api/user/refresh");
+          const refreshedToken = res.data?.token;
+          if (refreshedToken) {
+            setAuth(refreshedToken);
+            const role = await fetchRole();
+            setUser({ username, role, isAdmin: role === "ROLE_ADMIN" });
+          } else {
+            clearAuth();
+            setUser(null);
+          }
+        } catch {
+          clearAuth();
+          setUser(null);
+        } finally {
+          setLoading(false);
         }
-      } catch {
-        clearAuth();
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    })();
+      })();
+    }
   }, [navigate, location.pathname]);
 
   const login = async (username, password) => {
     try {
       const res = await loginRequest(username, password);
-      const token = res.token;
+      const token = res?.token;
+
+      if (!token) {
+        return {
+          success: false,
+          message:
+            typeof res === "string"
+              ? res
+              : "Invalid server response (no token). Please check backend connection.",
+        };
+      }
 
       setAuth(token);
 
       localStorage.setItem("loggedInUser", "true");
       localStorage.setItem("username", username);
 
-      const role = await fetchRole();
-      setUser({ username, role, isAdmin: role === "ROLE_ADMIN" });
+      try {
+        const role = await fetchRole();
+        setUser({ username, role, isAdmin: role === "ROLE_ADMIN" });
+      } catch {
+        setUser({ username, role: "ROLE_USER", isAdmin: false });
+      }
 
       return { success: true, message: "Logged in successfully" };
     } catch (err) {
+      const errorMsg =
+        err.response?.data?.message ||
+        (typeof err.response?.data === "string" ? err.response.data : null) ||
+        (err.response?.status === 401 ? "Invalid username or password" : null) ||
+        (err.response?.status === 503 ? err.response?.data?.message : null) ||
+        "Login failed. Please verify your backend server is accessible.";
+
       return {
         success: false,
-        message:
-          err.response?.status === 401 ? "Invalid credentials" : "Login failed",
+        message: errorMsg,
       };
     }
   };
@@ -81,16 +115,23 @@ export function AuthProvider({ children }) {
   const register = async (username, password) => {
     try {
       const msg = await registerRequest(username, password);
-      return { success: true, message: msg };
+      return {
+        success: true,
+        message: typeof msg === "string" ? msg : "User registered successfully",
+      };
     } catch (err) {
+      const errorMsg =
+        err.response?.data?.message ||
+        (typeof err.response?.data === "string" ? err.response.data : null) ||
+        (err.response?.status === 409
+          ? "Username is already taken. Please choose another."
+          : null) ||
+        (err.response?.status === 503 ? err.response?.data?.message : null) ||
+        "Registration failed. Please check your network connection and backend server.";
+
       return {
         success: false,
-        message:
-          !err.response || err.response.status === 503
-            ? "Backend unavailable. Start Spring Boot and check its terminal for MySQL connection errors."
-            : err.response.data?.message ||
-              err.response.data ||
-              "Registration failed. Please check your details and try again.",
+        message: errorMsg,
       };
     }
   };

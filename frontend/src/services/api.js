@@ -1,10 +1,25 @@
 // src/services/api.js
 import axios from "axios";
 
+export const getBaseURL = () => {
+  const envUrl = import.meta.env.VITE_BACKEND_URL;
+  const storedUrl = typeof window !== "undefined" ? localStorage.getItem("backend_url") : null;
+  const url = storedUrl || envUrl || "";
+  return url.replace(/\/+$/, "");
+};
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL ?? "",
+  baseURL: getBaseURL(),
   withCredentials: true,
 });
+
+// Restore token if present
+if (typeof window !== "undefined") {
+  const savedToken = localStorage.getItem("token");
+  if (savedToken) {
+    api.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
+  }
+}
 
 let isRefreshing = false;
 let failedQueue = [];
@@ -18,12 +33,34 @@ const processQueue = (error, token = null) => {
 };
 
 api.interceptors.request.use((config) => {
-  // You may keep this if you dynamically want to skip token logic in future
+  const dynamicBase = getBaseURL();
+  if (dynamicBase && !config.url?.startsWith("http")) {
+    config.baseURL = dynamicBase;
+  }
   return config;
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Detect if Vercel SPA rewrite returned index.html for an API endpoint
+    if (
+      typeof response.data === "string" &&
+      (response.data.trim().startsWith("<!doctype html") ||
+        response.data.trim().startsWith("<!DOCTYPE html") ||
+        response.data.includes("<div id=\"root\">"))
+    ) {
+      return Promise.reject({
+        response: {
+          status: 503,
+          data: {
+            message:
+              "Backend server not connected. The request was intercepted by the static host. Please set VITE_BACKEND_URL in Vercel or configure the backend URL in settings.",
+          },
+        },
+      });
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
     const isAuthenticationRequest = [
@@ -65,10 +102,9 @@ api.interceptors.response.use(
         originalRequest.headers["Authorization"] = "Bearer " + token;
         return api(originalRequest);
       } catch (err) {
-        console.error("🔁 Refresh token failed:", err?.response?.status, err?.response?.data);
+        console.warn("🔁 Refresh token failed:", err?.response?.status);
         processQueue(err, null);
         clearAuth();
-        window.location.href = "/login";
         return Promise.reject(err);
       } finally {
         isRefreshing = false;
@@ -82,13 +118,24 @@ api.interceptors.response.use(
 export function setAuth(token = null) {
   if (token) {
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    if (typeof window !== "undefined") {
+      localStorage.setItem("token", token);
+    }
   } else {
     delete api.defaults.headers.common["Authorization"];
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+    }
   }
 }
 
 export function clearAuth() {
   delete api.defaults.headers.common["Authorization"];
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("token");
+    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("username");
+  }
 }
 
 export default api;

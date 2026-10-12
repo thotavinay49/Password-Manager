@@ -99,12 +99,29 @@ export default function Login() {
           </p>
         )}
 
-        <p className={`mt-6 text-center text-sm ${choose("text-gray-600", "text-gray-400")}`}>
-          Don&apos;t have an account?{" "}
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Sign up
-          </Link>
-        </p>
+        <div className="mt-6 pt-4 border-t border-slate-200/40 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+          <p>
+            Don&apos;t have an account?{" "}
+            <Link to="/register" className="text-blue-600 hover:underline font-medium">
+              Sign up
+            </Link>
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              const current = localStorage.getItem("backend_url") || "";
+              const url = window.prompt("Enter your Render/Railway backend URL:\n(e.g. https://password-manager-backend.onrender.com)", current);
+              if (url !== null) {
+                if (url.trim()) localStorage.setItem("backend_url", url.trim().replace(/\/+$/, ""));
+                else localStorage.removeItem("backend_url");
+                window.location.reload();
+              }
+            }}
+            className="text-slate-400 hover:text-indigo-500 underline"
+          >
+            ⚙️ API URL
+          </button>
+        </div>
       </div>
     </div>
   );

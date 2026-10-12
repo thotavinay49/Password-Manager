@@ -59,12 +59,14 @@ public class UserController {
             user.setRefreshToken(refreshToken);
             userService.save(user);
 
-            Cookie refresh = new Cookie("refreshToken", refreshToken);
-            refresh.setHttpOnly(true);
-            refresh.setSecure(cookieSecure);
-            refresh.setPath("/api");
-            refresh.setMaxAge(7 * 24 * 60 * 60);
-            response.addCookie(refresh);
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+                    .httpOnly(true)
+                    .secure(cookieSecure)
+                    .path("/api")
+                    .maxAge(7 * 24 * 60 * 60)
+                    .sameSite(cookieSecure ? "None" : "Lax")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
             return ResponseEntity.ok(new JwtResponse(token, "Bearer", 15));
         } catch (AuthenticationException ex) {
@@ -115,12 +117,14 @@ public class UserController {
             userService.save(user);
         });
 
-        Cookie refresh = new Cookie("refreshToken", null);
-        refresh.setHttpOnly(true);
-        refresh.setSecure(cookieSecure);
-        refresh.setPath("/api");
-        refresh.setMaxAge(0);
-        response.addCookie(refresh);
+        ResponseCookie cleanCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/api")
+                .maxAge(0)
+                .sameSite(cookieSecure ? "None" : "Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cleanCookie.toString());
 
         return ResponseEntity.ok("Logged out successfully");
     }
