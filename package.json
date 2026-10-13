@@ -1,0 +1,12 @@
+{
+  "name": "secure-password-manager-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Secure Password Manager System - Monorepo root for Vercel and local orchestration",
+  "scripts": {
+    "dev": "npm --prefix Frontend run dev",
+    "build": "npm --prefix Frontend run build",
+    "lint": "npm --prefix Frontend run lint",
+    "preview": "npm --prefix Frontend run preview"
+  }
+}

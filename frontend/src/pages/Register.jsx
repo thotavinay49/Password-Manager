@@ -6,6 +6,7 @@ import { useNavigate, Link } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { getBaseURL, setDemoMode } from "../services/api";
 
 import InputField from "../components/ui/InputField";
 import PasswordField from "../components/ui/PasswordField";
@@ -89,6 +90,20 @@ export default function Register() {
           <Button type="submit" loading={stat.loading} className={btnCls}>
             {stat.loading ? "Creating…" : "Create Account"}
           </Button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              setDemoMode(true);
+              const userToRegister = form.username.trim() || "demo";
+              const passToRegister = form.password || "Password123!";
+              await register(userToRegister, passToRegister);
+              navigate("/login");
+            }}
+            className="w-full py-2.5 rounded-xl border border-indigo-300 dark:border-indigo-800 bg-white/70 dark:bg-slate-900/60 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 transition flex items-center justify-center gap-1.5 shadow-sm"
+          >
+            ⚡ Test in Instant Demo Vault (No Backend Needed)
+          </button>
         </form>
 
         {stat.message && (
@@ -105,6 +120,18 @@ export default function Register() {
                 This username is already registered. Click here to Sign In →
               </Link>
             )}
+            {stat.error && (stat.message.toLowerCase().includes("unable to reach") || stat.message.toLowerCase().includes("intercepted") || stat.message.toLowerCase().includes("unavailable")) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDemoMode(true);
+                  window.location.reload();
+                }}
+                className="mt-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline block mx-auto"
+              >
+                👉 Click here to activate Instant Demo Vault (Runs in browser with 0 errors)
+              </button>
+            )}
           </div>
         )}
 
@@ -119,16 +146,21 @@ export default function Register() {
             type="button"
             onClick={() => {
               const current = localStorage.getItem("backend_url") || "";
-              const url = window.prompt("Enter your Render/Railway backend URL:\n(e.g. https://password-manager-backend.onrender.com)", current);
+              const active = getBaseURL() || "http://localhost:8080";
+              const url = window.prompt(
+                `Current backend URL: ${active}\n\nEnter backend URL (e.g. http://localhost:8080 or your cloud URL).\nLeave empty to use default:`,
+                current
+              );
               if (url !== null) {
                 if (url.trim()) localStorage.setItem("backend_url", url.trim().replace(/\/+$/, ""));
                 else localStorage.removeItem("backend_url");
                 window.location.reload();
               }
             }}
-            className="text-slate-400 hover:text-indigo-500 underline"
+            className="text-slate-400 hover:text-indigo-500 underline flex items-center gap-1"
+            title="Configure backend server URL"
           >
-            ⚙️ API URL
+            ⚙️ API: {getBaseURL() || "Localhost"}
           </button>
         </div>
       </div>

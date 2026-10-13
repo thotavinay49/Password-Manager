@@ -1,3 +1,23 @@
+# Dependencies
+node_modules/
+Frontend/node_modules/
+target/
+backend/target/
+
+# Build artifacts
+dist/
+Frontend/dist/
+
+# Persistent DB files
 data/
-Backend/data
+backend/data/
+
+# Environment files
 .env
+.env.local
+*.local
+
+# System & IDE files
+.DS_Store
+Thumbs.db
+*.log

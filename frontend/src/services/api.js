@@ -1,17 +1,40 @@
 // src/services/api.js
 import axios from "axios";
+import { isDemoMode, handleDemoRequest, setDemoMode } from "./mockService";
+
+export { isDemoMode, setDemoMode };
 
 export const getBaseURL = () => {
   const envUrl = import.meta.env.VITE_BACKEND_URL;
-  const storedUrl = typeof window !== "undefined" ? localStorage.getItem("backend_url") : null;
+  let storedUrl = typeof window !== "undefined" ? localStorage.getItem("backend_url") : null;
+
+  // Auto-clear stale/defunct default Render placeholder that causes 404/timeouts
+  if (storedUrl && storedUrl.includes("password-manager-backend.onrender.com")) {
+    try {
+      localStorage.removeItem("backend_url");
+    } catch {
+      // ignore
+    }
+    storedUrl = null;
+  }
+
   if (storedUrl && storedUrl.trim()) return storedUrl.trim().replace(/\/+$/, "");
   if (envUrl && envUrl.trim()) return envUrl.trim().replace(/\/+$/, "");
+
   if (typeof window !== "undefined") {
-    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    const host = window.location.hostname;
+    if (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host.startsWith("192.168.") ||
+      host.startsWith("10.") ||
+      host.endsWith(".local")
+    ) {
       return "http://localhost:8080";
     }
   }
-  return "https://password-manager-backend.onrender.com";
+
+  return "";
 };
 
 export const api = axios.create({
@@ -39,6 +62,21 @@ const processQueue = (error, token = null) => {
 };
 
 api.interceptors.request.use((config) => {
+  if (isDemoMode()) {
+    config.adapter = async (cfg) => {
+      const res = await handleDemoRequest(cfg);
+      return {
+        data: res.data,
+        status: res.status,
+        statusText: "OK",
+        headers: {},
+        config: cfg,
+        request: {}
+      };
+    };
+    return config;
+  }
+
   const dynamicBase = getBaseURL();
   if (dynamicBase && !config.url?.startsWith("http")) {
     config.baseURL = dynamicBase;

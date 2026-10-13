@@ -25,7 +25,7 @@ import StrengthRing from "../components/credential/StrengthRing";
 import Button from "../components/ui/Button";
 
 import * as credSvc from "../services/credentialService";
-import { getBaseURL } from "../services/api";
+import { getBaseURL, isDemoMode, setDemoMode } from "../services/api";
 
 export default function Dashboard() {
   const { choose } = useTheme();
@@ -46,7 +46,9 @@ export default function Dashboard() {
     localStorage.getItem("backend_url") || import.meta.env.VITE_BACKEND_URL || ""
   );
 
-  const activeBackendUrl = getBaseURL() || "Local Proxy (http://localhost:8080)";
+  const activeBackendUrl = isDemoMode()
+    ? "Client-Side Demo Vault (Offline / Vercel)"
+    : getBaseURL() || "Local Proxy (http://localhost:8080)";
 
   useEffect(() => {
     loadCredentials();
@@ -97,6 +99,7 @@ export default function Dashboard() {
     const trimmed = customBackendUrl.trim().replace(/\/+$/, "");
     if (trimmed) {
       localStorage.setItem("backend_url", trimmed);
+      setDemoMode(false);
     } else {
       localStorage.removeItem("backend_url");
     }
@@ -657,6 +660,23 @@ export default function Dashboard() {
                   <p className="text-xs text-slate-400 mt-1">
                     On Vercel, paste your live Render backend URL here if you haven't set VITE_BACKEND_URL in Vercel project environment variables.
                   </p>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                  <span className="text-xs text-slate-500">
+                    Mode: <strong className="text-indigo-600 dark:text-indigo-400">{isDemoMode() ? "Demo Vault (Offline)" : "Live Backend"}</strong>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDemoMode(!isDemoMode());
+                      setShowConfigModal(false);
+                      window.location.reload();
+                    }}
+                    className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                  >
+                    {isDemoMode() ? "Switch to Live Server →" : "Switch to Demo Vault →"}
+                  </button>
                 </div>
               </div>
 

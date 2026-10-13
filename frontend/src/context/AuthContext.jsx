@@ -6,7 +6,7 @@ import {
   useState,
 } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { setAuth, clearAuth, api } from "../services/api";
+import { setAuth, clearAuth, api, getBaseURL } from "../services/api";
 import {
   loginRequest,
   registerRequest,
@@ -98,12 +98,13 @@ export function AuthProvider({ children }) {
 
       return { success: true, message: "Logged in successfully" };
     } catch (err) {
+      const serverUrl = getBaseURL() || (typeof window !== "undefined" ? window.location.origin : "server");
       const errorMsg =
         err.response?.data?.message ||
         (typeof err.response?.data === "string" ? err.response.data : null) ||
         (err.response?.status === 401 ? "Invalid username or password" : null) ||
         (err.response?.status === 503 ? err.response?.data?.message : null) ||
-        "Login failed. Please verify your backend server is accessible.";
+        `Unable to reach backend server at ${serverUrl}. Please ensure your Spring Boot backend is running on port 8080 (or check your API URL in settings).`;
 
       return {
         success: false,
@@ -120,14 +121,21 @@ export function AuthProvider({ children }) {
         message: typeof msg === "string" ? msg : "User registered successfully",
       };
     } catch (err) {
+      const serverUrl = getBaseURL() || (typeof window !== "undefined" ? window.location.origin : "server");
       const errorMsg =
         err.response?.data?.message ||
+        err.response?.data?.detail ||
         (typeof err.response?.data === "string" ? err.response.data : null) ||
         (err.response?.status === 409
           ? "Username is already taken. Please choose another."
           : null) ||
-        (err.response?.status === 503 ? err.response?.data?.message : null) ||
-        "Registration failed. Please check your network connection and backend server.";
+        (err.response?.status === 400
+          ? "Registration failed. Invalid username or password."
+          : null) ||
+        (err.response?.status === 503
+          ? err.response?.data?.message || "Backend server or database is currently unavailable."
+          : null) ||
+        `Unable to reach backend server at ${serverUrl}. Please verify the backend is running.`;
 
       return {
         success: false,
