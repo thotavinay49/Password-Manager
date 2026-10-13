@@ -4,8 +4,14 @@ import axios from "axios";
 export const getBaseURL = () => {
   const envUrl = import.meta.env.VITE_BACKEND_URL;
   const storedUrl = typeof window !== "undefined" ? localStorage.getItem("backend_url") : null;
-  const url = storedUrl || envUrl || "";
-  return url.replace(/\/+$/, "");
+  if (storedUrl && storedUrl.trim()) return storedUrl.trim().replace(/\/+$/, "");
+  if (envUrl && envUrl.trim()) return envUrl.trim().replace(/\/+$/, "");
+  if (typeof window !== "undefined") {
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return "http://localhost:8080";
+    }
+  }
+  return "https://password-manager-backend.onrender.com";
 };
 
 export const api = axios.create({

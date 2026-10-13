@@ -11,7 +11,7 @@ services:
       - key: PORT
         value: 8080
       - key: DB_URL
-        value: "jdbc:mysql://passwordmanager-db-anurag-2ed0.g.aivencloud.com:26360/defaultdb?sslMode=REQUIRED&serverTimezone=UTC"
+        value: "jdbc:mysql://passwordmanager-db-anurag-2ed0.g.aivencloud.com:26360/defaultdb?sslMode=PREFERRED&enabledTLSProtocols=TLSv1.2&serverTimezone=UTC&autoReconnect=true"
       - key: DB_USERNAME
         value: "avnadmin"
       - key: DB_PASSWORD
