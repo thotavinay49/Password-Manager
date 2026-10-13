@@ -19,7 +19,7 @@ services:
       - key: COOKIE_SECURE
         value: "true"
       - key: ALLOWED_ORIGINS
-        value: "http://localhost:5173,https://password-manager-frontend.vercel.app,https://password-manager-frontend.onrender.com"
+        value: "http://localhost:5173,https://password-manager-oaxy0vpci-tt-project4.vercel.app,https://*.vercel.app,https://password-manager-frontend.vercel.app,https://password-manager-frontend.onrender.com"
       - key: CREDENTIAL_ENCRYPTION_KEY
         value: "YsAdQ2c3DSj062W4GXRbSZZrFZ4NSQw5r9Oj53IW7WQ="
       - key: JWT_SECRET
