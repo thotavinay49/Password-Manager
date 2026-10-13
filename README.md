@@ -1,148 +1,95 @@
-# 🔐 Password Manager
+# 🔐 SecurePasswordManagerSystem
 
-A secure, full-stack password management application built with **Spring Boot** (Backend) and **React** (Frontend).  
-It allows users to store, manage, and generate strong passwords with encryption and authentication.
-
----
-
-## 📌 Features
-- **User Authentication**: JWT-based secure login & registration.
-- **Credential Management**:
-  - Add, view, update, delete credentials.
-  - Search and filter credentials.
-- **Password Generator**:
-  - Generate strong random passwords.
-  - Visual strength indicator (badge & ring).
-- **Responsive UI**:
-  - Built with modular components and reusable UI elements.
-- **Secure Storage**:
-  - Passwords stored in encrypted form in the database.
-- **Audit Logging**:
-  - Track user actions and credential changes.
+**SecurePasswordManagerSystem** is a modern, enterprise-grade full-stack password management application engineered for zero-compromise security, real-time cryptographic analysis, and seamless cloud deployment.
 
 ---
 
-## 🛠 Tech Stack
+## 🚀 Live Tech Stack
 
-### Backend
-- **Java 17** + **Spring Boot**
-- **Spring Security** with JWT
-- **H2 Database** (dev) / can be replaced with MySQL/PostgreSQL
-- **Maven**
+- **Frontend:** React 19, Vite 7, Tailwind CSS v4, Lucide React
+- **Backend:** Java 21, Spring Boot 3.5.3, Spring Security 6, Spring Data JPA, Hibernate
+- **Database:** Aiven Cloud MySQL 8.4 (Managed, TLS/SSL Required, HikariCP Connection Pool)
+- **Encryption:** AES-256-GCM (Field-level encryption at rest)
+- **Authentication:** Stateless JWT + HTTP-Only `SameSite=None; Secure` Refresh Cookies
+- **Deployment:** Render (Backend Docker Web Service) + Vercel (Frontend Static Web App)
 
-### Frontend
-- **React 18** + Vite
-- **Context API** for theme & toast notifications
-- **Custom Hooks** for clipboard and local storage
+---
+
+## 📌 Key Features
+
+- **Zero-Exposure Credential Storage:** Passwords are encrypted with AES-256-GCM in the backend before being persisted to the Aiven Cloud MySQL database.
+- **Executive Security Dashboard:**
+  - 4 Live KPI Cards (Total Saved Passwords, Vault Health %, High Entropy Keys, At-Risk Items).
+  - Visual Strength Distribution Donut Ring.
+  - Interactive Security Inspector calculating password crack resistance.
+- **Smart Password Generator:** Cryptographically random, high-entropy password generation with customizable criteria and one-click clipboard sync.
+- **Dynamic Connection Switcher:** Built-in UI modal for switching between local backend (`http://localhost:8080`), Cloudflare tunnels, and cloud production URLs.
+- **Responsive Theme Engine:** Glassmorphic modern dark and light mode aesthetics.
 
 ---
 
 ## 📂 Project Structure
-```
-PasswordManager/
-│
-├── App/
-│   ├── Backend/         # Spring Boot backend
-│   │   ├── src/main/java/com/PasswordManager/Backend/
-│   │   ├── data/        # H2 database files
-│   │   └── pom.xml
-│   │
-│   ├── Frontend/        # React frontend
-│   │   ├── src/
-│   │   │   ├── components/
-│   │   │   ├── context/
-│   │   │   ├── hooks/
-│   │   │   ├── pages/
-│   │   │   ├── services/
-│   │   │   └── styles/
-│   │   ├── index.html
-│   │   └── vite.config.js
-│   │
-│   └── data/            # App-level data storage
-│
+
+```text
+SecurePasswordManagerSystem/
+├── backend/                  # Spring Boot 3.5.3 (Java 21) REST API
+│   ├── src/main/java/        # Controllers, Services, Models, Security
+│   ├── src/main/resources/   # application.properties (Aiven Cloud DB config)
+│   ├── Dockerfile            # Multi-stage production build
+│   ├── pom.xml
+│   └── mvnw / mvnw.cmd
+├── Frontend/                 # React 19 + Vite 7 + Tailwind CSS
+│   ├── src/components/       # UI Components, Credential Modals, Generator
+│   ├── src/pages/            # Dashboard, Login, Register, Generator, Settings
+│   ├── src/services/         # API Interceptors & Service Layer
+│   ├── vercel.json           # Vercel SPA router rewrite rules
+│   └── vite.config.js
+├── docker-compose.yml        # Local container orchestration
+├── render.yaml               # Render Infrastructure-as-Code Blueprint
 └── README.md
 ```
 
 ---
 
-## ⚙️ Setup & Run
+## ⚙️ Running Locally
 
-### 1️⃣ Clone the repository
-```bash
-git clone https://github.com/<your-username>/Password-Manager.git
-cd Password-Manager/App
-```
+### 1️⃣ Prerequisites
+- Java 21 JDK
+- Node.js (v20+ or v24+)
 
 ### 2️⃣ Backend Setup
-```bash
-cd Backend
-mvnw.cmd clean install
-```
-
-In MySQL Workbench, connect to your local MySQL server and run this once. Replace the example password with a new password of your choice:
-```sql
-CREATE DATABASE IF NOT EXISTS passwordmanagerdb;
-CREATE USER IF NOT EXISTS 'VINAY_SECURED'@'localhost'
-  IDENTIFIED BY 'replace-with-a-new-strong-password';
-ALTER USER 'VINAY_SECURED'@'localhost'
-  IDENTIFIED BY 'replace-with-a-new-strong-password';
-GRANT ALL PRIVILEGES ON passwordmanagerdb.* TO 'VINAY_SECURED'@'localhost';
-```
-
-Set the same credentials for Spring Boot in PowerShell, then start the backend. `DB_USERNAME` and `DB_PASSWORD` are required; the backend does not fall back to the MySQL `root` account:
 ```powershell
-$env:DB_USERNAME = "VINAY_SECURED"
-$env:DB_PASSWORD = "<the new MySQL password>"
-$bytes = New-Object byte[] 32
-[Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
-$env:CREDENTIAL_ENCRYPTION_KEY = [Convert]::ToBase64String($bytes)
+cd backend
+$env:DB_PASSWORD = "<your-aiven-db-password>"
 .\mvnw.cmd spring-boot:run
 ```
-
-Generate `CREDENTIAL_ENCRYPTION_KEY` once and keep it private and backed up. Reuse that exact key on every backend restart; changing or losing it makes saved credential passwords unreadable. Saved vault passwords are encrypted by the backend using AES-GCM before being stored in MySQL. Existing plaintext vault passwords are encrypted the first time that user's vault is fetched. The backend connects to MySQL at **`localhost:3306`**. User accounts and application data are stored in `passwordmanagerdb`. The backend starts at **`http://localhost:8080`**.
+*The backend connects to Aiven Cloud MySQL and starts on `http://localhost:8080`.*
 
 ### 3️⃣ Frontend Setup
-```bash
-cd ../Frontend
+```powershell
+cd Frontend
 npm install
 npm run dev
 ```
-The frontend will start at **`http://localhost:5173`** (Vite default).
+*The frontend starts on `http://localhost:5173` with automated proxying to the backend.*
 
 ---
 
-## 🔑 Environment Variables
+## 🌐 Cloud Deployment
 
-**Backend environment variables** (set these before starting Spring Boot)
-```properties
-DB_URL=jdbc:mysql://localhost:3306/passwordmanagerdb?createDatabaseIfNotExist=true&serverTimezone=UTC
-DB_USERNAME=VINAY_SECURED
-DB_PASSWORD=your_mysql_password
-CREDENTIAL_ENCRYPTION_KEY=base64_encoded_32_byte_key
-jwt.secret=your_jwt_secret
-```
+### 1. Render (Backend)
+1. Link GitHub repository: `https://github.com/thotavinay49/Password-Manager`.
+2. Render uses `render.yaml` or `backend/Dockerfile` automatically.
+3. In the Render Environment tab, set:
+   - `DB_PASSWORD = <your-aiven-db-password>`
 
-**Frontend (`.env`)**
-```env
-# Optional: omit to use the Vite /api proxy to localhost:8080
-VITE_BACKEND_URL=http://localhost:8080
-```
-
----
-
-## 📸 Screenshots
-*(You can add screenshots here later)*
-
----
-
-## 🛡 Security Notes
-- Vault passwords are encrypted in the backend before database storage. Protect and back up `CREDENTIAL_ENCRYPTION_KEY`; do not commit or rotate it without migrating existing data.
-- JWT tokens are used for authentication.
-- Implement HTTPS in production.
+### 2. Vercel (Frontend)
+1. Import repository on Vercel.
+2. Set Root Directory to `Frontend`.
+3. Add Environment Variable:
+   - `VITE_BACKEND_URL = https://your-backend-name.onrender.com`
 
 ---
 
 ## 📜 License
 MIT License. Free to use and modify.
-
----

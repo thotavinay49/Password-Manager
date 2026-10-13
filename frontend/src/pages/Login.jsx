@@ -55,7 +55,7 @@ export default function Login() {
             Welcome Back
           </h2>
           <p className={choose("text-gray-600", "text-gray-400")}>
-            Sign in to your SecureVault account
+            Sign in to your SecurePasswordManagerSystem account
           </p>
         </div>
 

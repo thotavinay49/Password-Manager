@@ -36,8 +36,8 @@ export default function Sidebar({ active, onSelect }) {
             <Shield className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className={`text-xl font-bold ${choose("text-gray-900","text-gray-100")}`}>SecureVault</h1>
-            <p className={choose("text-xs text-gray-600","text-xs text-gray-400")}>Password Manager</p>
+            <h1 className={`text-base font-bold leading-tight ${choose("text-gray-900","text-gray-100")}`}>SecurePassword</h1>
+            <p className={choose("text-xs text-gray-600","text-xs text-gray-400")}>Manager System</p>
           </div>
         </div>
 
