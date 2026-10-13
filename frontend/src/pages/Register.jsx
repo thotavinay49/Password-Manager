@@ -92,13 +92,20 @@ export default function Register() {
         </form>
 
         {stat.message && (
-          <p
-            className={`mt-4 text-center text-sm ${
-              stat.error ? "text-red-600" : "text-green-600"
-            }`}
-          >
-            {stat.message}
-          </p>
+          <div className="mt-4 text-center">
+            <p
+              className={`text-sm font-medium ${
+                stat.error ? "text-red-500" : "text-green-500"
+              }`}
+            >
+              {stat.message}
+            </p>
+            {stat.error && (stat.message.toLowerCase().includes("taken") || stat.message.toLowerCase().includes("already")) && (
+              <Link to="/login" className="text-xs text-blue-500 hover:underline mt-1.5 inline-block font-medium">
+                This username is already registered. Click here to Sign In →
+              </Link>
+            )}
+          </div>
         )}
 
         <div className="mt-6 pt-4 border-t border-slate-200/40 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
